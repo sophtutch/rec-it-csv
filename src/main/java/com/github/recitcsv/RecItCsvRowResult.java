@@ -13,11 +13,11 @@ class RecItCsvRowResult {
         this.fieldResults = fieldResults;
     }
 
-    boolean isMatched() {
+    public boolean isMatched() {
         return matched;
     }
 
-    List<RecItCsvFieldResult> getFieldResults() {
+    public List<RecItCsvFieldResult> getFieldResults() {
         return fieldResults;
     }
 

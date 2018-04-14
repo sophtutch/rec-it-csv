@@ -13,15 +13,15 @@ class RecItCsvFieldResult {
         this.actual = actual;
     }
 
-    boolean isMatched() {
+    public boolean isMatched() {
         return matched;
     }
 
-    String getExpected() {
+    public String getExpected() {
         return expected;
     }
 
-    String getActual() {
+    public String getActual() {
         return actual;
     }
 

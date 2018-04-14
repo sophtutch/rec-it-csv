@@ -143,9 +143,10 @@ public class RecItCsvReconcilier {
                         RecItCsvTuple actualTuple = actualRow.get(index);
                         boolean equals = isEquals(fields.get(index).getType(), toleranceDiffActual, toleranceDiffPercentage, expectedTuple.getAfter(), actualTuple.getAfter());
                         fieldResult = new RecItCsvFieldResult(equals, expectedTuple.getBefore(), actualTuple.getBefore());
+                        fieldsMatch &= equals;
                     } else {
                         fieldResult = new RecItCsvFieldResult(false, expectedTuple.getBefore(), null);
-                        fieldsMatch = false;
+                        fieldsMatch &= false;
                     }
                     fieldResults.add(fieldResult);
                 }

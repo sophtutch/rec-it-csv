@@ -6,7 +6,72 @@
 </head>
 <body>
 <div>
-    <p>File name: <span th:text="*{fileName}">File Name</span></p>
+    <h1><span th:text="${name}"></span></h1>
+    <hr/>
+    <p>
+    <table th:border="1">
+        <h2>File Configuration</h2>
+        <tr>
+            <td>Separator</td>
+            <td th:text="${separator}"></td>
+        </tr>
+        <tr>
+            <td>Expected files directory</td>
+            <td th:text="${expectedDir}"></td>
+        </tr>
+        <tr>
+            <td>Actual files directory</td>
+            <td th:text="${actualDir}"></td>
+        </tr>
+        <tr>
+            <td>Difference tolerance (Actual)</td>
+            <td th:text="${numericFieldDiffToleranceActual}"></td>
+        </tr>
+        <tr>
+            <td>Difference tolerance (Percentage)</td>
+            <td th:text="${numericFieldDiffTolerancePercent}"></td>
+        </tr>
+    </table>
+    </p>
+    <p>
+    <table th:if="${missingFromExpected}" th:border="1">
+        <h2 th:text="'Lines missing from expected: ' + ${missingFromExpected.size()}"></h2>
+        <tr th:each="line : ${missingFromExpected}">
+            <td th:text="${line}"></td>
+        </tr>
+    </table>
+    </p>
+    <p>
+    <table th:if="${missingFromActual}" th:border="1">
+        <h2 th:text="'Lines missing from actual: ' + ${missingFromActual.size()}"></h2>
+        <tr th:each="line : ${missingFromActual}">
+            <td th:text="${line}"></td>
+        </tr>
+    </table>
+    </p>
+    <p>
+    <p>
+    <table th:if="${errorMessage}" th:border="1">
+        <h2>An Error Occurred</h2>
+        <tr>
+            <td th:text="${errorMessage}"></td>
+        </tr>
+    </table>
+    </p>
+    <p>
+    <table th:if="${rowResults}" th:border="1">
+        <h2>Unmatched Rows</h2>
+        <tr>
+            <th th:each="field : ${fields}" th:text="${field.name}"></th>
+        </tr>
+        <tr th:each="row : ${rowResults}">
+            <td th:each="field : ${row.fieldResults}" th:text="${field.actual}"></td>
+        </tr>
+    </table>
+    </p>
+    <br/>
+    <hr/>
+    <a th:href="@{home.html}">Home</a>
 </div>
 </body>
 </html>

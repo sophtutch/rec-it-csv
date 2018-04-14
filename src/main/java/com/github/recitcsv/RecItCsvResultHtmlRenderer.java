@@ -11,8 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 class RecItCsvResultHtmlRenderer {
 
@@ -25,6 +28,8 @@ class RecItCsvResultHtmlRenderer {
     void render(List<RecItCsvResult> results) throws IOException {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
 
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
@@ -34,30 +39,64 @@ class RecItCsvResultHtmlRenderer {
             tmp = Files.createDirectory(tmp);
         }
 
-        List<String> resultFileNames = new LinkedList<>();
+        Path expectedDir = configuration.getExpectedDir().orElse(Paths.get("")).toAbsolutePath();
+        Path actualDir = configuration.getActualDir().orElse(Paths.get("")).toAbsolutePath();
+        Double numericFieldDiffToleranceActual = configuration.getNumericFieldDiffToleranceActual().orElse(null);
+        Double numericFieldDiffTolerancePercent = configuration.getNumericFieldDiffTolerancePercent().orElse(null);
+
+        Map<String, String> resultFileNames = new LinkedHashMap<>();
         for (RecItCsvResult result : results) {
-            String fileName = result.getFileConfiguration().getName();
-            resultFileNames.add(fileName);
+            boolean matched = result.isMatched();
+            List<String> missingFromExpected = result.getMissingFromExpected();
+            List<String> missingFromActual = result.getMissingFromActual();
+            List<RecItCsvRowResult> rowResults = result.getRowResults() == null ? null : result.getRowResults().stream().filter(row -> !row.isMatched()).collect(Collectors.toList());
+
+            RecItCsvConfiguration.FileConfiguration fileConfiguration = result.getFileConfiguration();
+
+            Path fileExpectedDir = fileConfiguration.getExpectedDir().orElse(expectedDir).toAbsolutePath();
+            Path fileActualDir = fileConfiguration.getActualDir().orElse(actualDir).toAbsolutePath();
+
+            String filePath = fileActualDir.resolve(fileConfiguration.getName()).toString();
+
+            Double diffToleranceActual = fileConfiguration.getNumericFieldDiffToleranceActual().orElse(numericFieldDiffToleranceActual);
+            Double diffTolerancePercent = fileConfiguration.getNumericFieldDiffTolerancePercent().orElse(numericFieldDiffTolerancePercent);
 
             Context context = new Context();
-            context.setVariable("fileName", fileName);
+            context.setVariable("name", filePath);
+            context.setVariable("separator", fileConfiguration.getSeparator());
+            context.setVariable("expectedDir", fileExpectedDir);
+            context.setVariable("actualDir", fileActualDir);
+            context.setVariable("numericFieldDiffToleranceActual", diffToleranceActual);
+            context.setVariable("numericFieldDiffTolerancePercent", diffTolerancePercent);
+            context.setVariable("fields", fileConfiguration.getFields());
+
+            context.setVariable("matched", matched);
+            context.setVariable("missingFromExpected", missingFromExpected);
+            context.setVariable("missingFromActual", missingFromActual);
+            context.setVariable("rowResults", rowResults);
+            context.setVariable("errorMessage", result.getErrorMessage());
 
             StringWriter stringWriter = new StringWriter();
-            templateEngine.process("templates/file.html", context, stringWriter);
+            templateEngine.process("file", context, stringWriter);
 
-            Path resultFile = tmp.resolve(fileName + ".html");
+            Path resultFile = tmp.resolve(UUID.randomUUID().toString() + ".html");
             Files.deleteIfExists(resultFile);
             Files.createFile(resultFile);
 
             Files.write(resultFile, stringWriter.toString().getBytes(), StandardOpenOption.APPEND);
+
+            resultFileNames.put(filePath, resultFile.getFileName().toString());
         }
 
         Context context = new Context();
-        context.setVariable("configuration", configuration);
+        context.setVariable("expectedDir", expectedDir);
+        context.setVariable("actualDir", actualDir);
+        context.setVariable("numericFieldDiffToleranceActual", numericFieldDiffToleranceActual);
+        context.setVariable("numericFieldDiffTolerancePercent", numericFieldDiffTolerancePercent);
         context.setVariable("fileNames", resultFileNames);
 
         StringWriter stringWriter = new StringWriter();
-        templateEngine.process("templates/home.html", context, stringWriter);
+        templateEngine.process("home", context, stringWriter);
 
         Path resultFile = tmp.resolve("home.html");
         Files.deleteIfExists(resultFile);

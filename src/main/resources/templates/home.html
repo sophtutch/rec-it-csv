@@ -6,10 +6,45 @@
 </head>
 <body>
 <div>
-    <p>Expected files directory: <span th:text="*{configuration.getExpectedDir().get()}"></span></p>
-    <p>Actual files directory: <span th:text="*{configuration.getActualDir().get()}"></span></p>
-    <p>Difference tolerance (Actual): <span th:text="*{configuration.getNumericFieldDiffToleranceActual().get()}"></span></p>
-    <p>Difference tolerance (Percentage): <span th:text="*{configuration.getNumericFieldDiffTolerancePercent().get()}"></span></p>
+    <h1>File Reconciliation Results</h1>
+    <hr/>
+    <p>
+    <table th:border="1">
+        <h2>Configuration</h2>
+        <tr>
+            <td>Expected files directory</td>
+            <td th:text="${expectedDir}"></td>
+        </tr>
+        <tr>
+            <td>Actual files directory</td>
+            <td th:text="${actualDir}"></td>
+        </tr>
+        <tr>
+            <td>Difference tolerance (Actual)</td>
+            <td th:text="${numericFieldDiffToleranceActual}"></td>
+        </tr>
+        <tr>
+            <td>Difference tolerance (Percentage)</td>
+            <td th:text="${numericFieldDiffTolerancePercent}"></td>
+        </tr>
+    </table>
+    </p>
+    <p>
+    <table th:border="1">
+        <h2>Files</h2>
+        <tr>
+            <th>Name</th>
+            <th>Matched</th>
+        </tr>
+        <tr th:each="entry : ${fileNames}">
+            <td><a th:href="__${entry.value}__" th:text="${entry.key}"></a></td>
+            <td></td>
+        </tr>
+    </table>
+    </p>
+    <br/>
+    <hr/>
+    <a th:href="@{home.html}">Home</a>
 </div>
 </body>
 </html>

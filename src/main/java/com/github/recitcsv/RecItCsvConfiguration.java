@@ -133,7 +133,7 @@ class RecItCsvConfiguration {
 
         private boolean key;
 
-        String getName() {
+        public String getName() {
             return name;
         }
 
@@ -141,7 +141,7 @@ class RecItCsvConfiguration {
             this.name = name;
         }
 
-        RecItCsvFieldType getType() {
+        public RecItCsvFieldType getType() {
             return RecItCsvFieldType.find(type);
         }
 
@@ -149,7 +149,7 @@ class RecItCsvConfiguration {
             this.type = type;
         }
 
-        String getFormat() {
+        public String getFormat() {
             return format;
         }
 
@@ -157,7 +157,7 @@ class RecItCsvConfiguration {
             this.format = format;
         }
 
-        boolean isKey() {
+        public boolean isKey() {
             return key;
         }
 
