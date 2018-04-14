@@ -1,0 +1,31 @@
+expectedDir: 'expected'
+actualDir: 'actual'
+
+numericFieldDiffToleranceActual: 0.01
+numericFieldDiffTolerancePercent: 1
+
+files:
+  - name: 'file1.dat'
+    expectedDir: 'src/test/resources/expected'
+    actualDir: 'src/test/resources/actual'
+    separator: ','
+    numericFieldDiffToleranceActual: 0.02
+    fields:
+      - name: 'ID'
+        type: 'NUMERIC'
+        key: 'true'
+      - name: 'NAME'
+        type: 'STRING'
+        key: 'true'
+      - name: 'VALUE'
+        type: 'DECIMAL'
+        key: 'false'
+
+  - name: 'file2.dat'
+    separator: '|'
+    numericFieldDiffToleranceActual: 0
+    numericFieldDiffTolerancePercent: 2
+    fields:
+      - name: 'ID'
+        type: 'STRING'
+        key: 'true'
