@@ -17,7 +17,7 @@ class RecItCsvConfiguration {
 
     private Collection<FileConfiguration> files;
 
-    Optional<Path> getExpectedDir() {
+    public Optional<Path> getExpectedDir() {
         return Objects.nonNull(expectedDir) ? Optional.of(Paths.get(expectedDir)) : Optional.empty();
     }
 
@@ -25,7 +25,7 @@ class RecItCsvConfiguration {
         this.expectedDir = expectedDir;
     }
 
-    Optional<Path> getActualDir() {
+    public Optional<Path> getActualDir() {
         return Objects.nonNull(actualDir) ? Optional.of(Paths.get(actualDir)) : Optional.empty();
     }
 
@@ -33,7 +33,7 @@ class RecItCsvConfiguration {
         this.actualDir = actualDir;
     }
 
-    Optional<Double> getNumericFieldDiffToleranceActual() {
+    public Optional<Double> getNumericFieldDiffToleranceActual() {
         return Optional.ofNullable(numericFieldDiffToleranceActual);
     }
 
@@ -41,7 +41,7 @@ class RecItCsvConfiguration {
         this.numericFieldDiffToleranceActual = numericFieldDiffToleranceActual;
     }
 
-    Optional<Double> getNumericFieldDiffTolerancePercent() {
+    public Optional<Double> getNumericFieldDiffTolerancePercent() {
         return Optional.ofNullable(numericFieldDiffTolerancePercent);
     }
 
@@ -49,7 +49,7 @@ class RecItCsvConfiguration {
         this.numericFieldDiffTolerancePercent = numericFieldDiffTolerancePercent;
     }
 
-    Collection<FileConfiguration> getFiles() {
+    public Collection<FileConfiguration> getFiles() {
         return files;
     }
 

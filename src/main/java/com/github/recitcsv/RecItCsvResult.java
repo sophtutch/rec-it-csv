@@ -4,15 +4,36 @@ import java.util.List;
 
 class RecItCsvResult {
 
-    private final List<String> missingFromExpected;
-    private final List<String> missingFromActual;
+    private final boolean matched;
+    private final RecItCsvConfiguration.FileConfiguration fileConfiguration;
 
-    private final List<RecItCsvRowResult> rowResults;
+    private List<String> missingFromExpected;
+    private List<String> missingFromActual;
 
-    RecItCsvResult(RecItCsvConfiguration.FileConfiguration fileConfiguration, List<String> missingFromExpected, List<String> missingFromActual, List<RecItCsvRowResult> rowResults) {
+    private List<RecItCsvRowResult> rowResults;
+
+    private String errorMessage;
+
+    RecItCsvResult(boolean matched, RecItCsvConfiguration.FileConfiguration fileConfiguration, List<String> missingFromExpected, List<String> missingFromActual, List<RecItCsvRowResult> rowResults) {
+        this.matched = matched;
+        this.fileConfiguration = fileConfiguration;
         this.missingFromExpected = missingFromExpected;
         this.missingFromActual = missingFromActual;
         this.rowResults = rowResults;
+    }
+
+    RecItCsvResult(boolean matched, RecItCsvConfiguration.FileConfiguration fileConfiguration, String errorMessage) {
+        this.matched = matched;
+        this.fileConfiguration = fileConfiguration;
+        this.errorMessage = errorMessage;
+    }
+
+    public boolean isMatched() {
+        return matched;
+    }
+
+    public RecItCsvConfiguration.FileConfiguration getFileConfiguration() {
+        return fileConfiguration;
     }
 
     public List<String> getMissingFromExpected() {
@@ -25,5 +46,9 @@ class RecItCsvResult {
 
     public List<RecItCsvRowResult> getRowResults() {
         return rowResults;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }

@@ -2,7 +2,6 @@ package com.github.recitcsv;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -13,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -30,6 +30,8 @@ public class RecItCsvReconcilier {
             Path expectedFile = fileConfiguration.getExpectedDir().orElse(configuration.getExpectedDir().orElseThrow(() -> new RecItCsvException("The expected result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath().resolve(fileConfiguration.getName());
             Path actualFile = fileConfiguration.getActualDir().orElse(configuration.getActualDir().orElseThrow(() -> new RecItCsvException("The actual result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath().resolve(fileConfiguration.getName());
 
+            List<RecItCsvConfiguration.FileField> fields = fileConfiguration.getFields();
+
             boolean expectedFilePresent = checkFileExists(expectedFile).isPresent();
             boolean actualFilePresent = checkFileExists(actualFile).isPresent();
             if (expectedFilePresent && actualFilePresent) {
@@ -42,11 +44,15 @@ public class RecItCsvReconcilier {
                     List<String> missingFromExpected = getMissingRows(actualRows, expectedRows);
                     List<String> missingFromActual = getMissingRows(expectedRows, actualRows);
 
-                    List<RecItCsvRowResult> rowResults = reconcileRows(toleranceDiffActual, toleranceDiffPercentage, expectedRows, actualRows);
+                    List<RecItCsvRowResult> rowResults = reconcileRows(fields, toleranceDiffActual, toleranceDiffPercentage, expectedRows, actualRows);
 
-                    results.add(new RecItCsvResult(fileConfiguration, missingFromExpected, missingFromActual, rowResults));
+                    boolean matched = missingFromExpected.isEmpty() && missingFromActual.isEmpty() && rowResults.stream().allMatch(RecItCsvRowResult::isMatched);
+                    results.add(new RecItCsvResult(matched, fileConfiguration, missingFromExpected, missingFromActual, rowResults));
                 } catch (IOException e) {
+                    results.add(new RecItCsvResult(false, fileConfiguration, "Failed to read files for reconciliation. " + e.getMessage()));
                 }
+            } else {
+                results.add(new RecItCsvResult(false, fileConfiguration, "Expected file " + (expectedFilePresent ? "" : "not ") + "present. Actual file " + (actualFilePresent ? "" : "not ") + "present."));
             }
         }
         return results;
@@ -90,26 +96,24 @@ public class RecItCsvReconcilier {
     private Object getObject(RecItCsvFieldType type, String format, String string) {
         switch (type) {
             case BOOLEAN:
-                return !isNullOrEmpty(string) ? Boolean.valueOf(string) : null;
+                return isNotNullOrEmpty(string) ? Boolean.valueOf(string) : null;
             case STRING:
-                return !isNullOrEmpty(string) ? string : null;
+                return isNotNullOrEmpty(string) ? string : null;
             case NUMERIC:
-                return !isNullOrEmpty(string) ? new BigInteger(string) : null;
-            case DECIMAL:
-                return !isNullOrEmpty(string) ? new BigDecimal(string) : null;
+                return isNotNullOrEmpty(string) ? new BigDecimal(string) : null;
             case DATE:
-                return !isNullOrEmpty(string) ? LocalDate.parse(string, DateTimeFormatter.ofPattern(format)) : null;
+                return isNotNullOrEmpty(string) ? LocalDate.parse(string, DateTimeFormatter.ofPattern(format)) : null;
             case TIME:
-                return !isNullOrEmpty(string) ? LocalTime.parse(string, DateTimeFormatter.ofPattern(format)) : null;
+                return isNotNullOrEmpty(string) ? LocalTime.parse(string, DateTimeFormatter.ofPattern(format)) : null;
             case DATETIME:
-                return !isNullOrEmpty(string) ? LocalDateTime.parse(string, DateTimeFormatter.ofPattern(format)) : null;
+                return isNotNullOrEmpty(string) ? LocalDateTime.parse(string, DateTimeFormatter.ofPattern(format)) : null;
             default:
                 return null;
         }
     }
 
-    private boolean isNullOrEmpty(String in) {
-        return in == null || in.isEmpty();
+    private boolean isNotNullOrEmpty(String in) {
+        return in != null && !in.isEmpty();
     }
 
     private List<String> getMissingRows(Map<List<String>, RecItCsvRow> first, Map<List<String>, RecItCsvRow> second) {
@@ -119,7 +123,7 @@ public class RecItCsvReconcilier {
                 .collect(Collectors.toList());
     }
 
-    private List<RecItCsvRowResult> reconcileRows(double toleranceDiffActual, double toleranceDiffPercentage, Map<List<String>, RecItCsvRow> expectedRows, Map<List<String>, RecItCsvRow> actualRows) {
+    private List<RecItCsvRowResult> reconcileRows(List<RecItCsvConfiguration.FileField> fields, double toleranceDiffActual, double toleranceDiffPercentage, Map<List<String>, RecItCsvRow> expectedRows, Map<List<String>, RecItCsvRow> actualRows) {
         List<RecItCsvRowResult> rowResults = new LinkedList<>();
         for (List<String> key : expectedRows.keySet()) {
             List<RecItCsvFieldResult> fieldResults = new LinkedList<>();
@@ -135,9 +139,9 @@ public class RecItCsvReconcilier {
                 for (int index = 0; index < expectedRow.size(); index++) {
                     RecItCsvFieldResult fieldResult;
                     RecItCsvTuple expectedTuple = expectedRow.get(index);
-                    if (actualRow.size() < index) {
+                    if (index < actualRow.size()) {
                         RecItCsvTuple actualTuple = actualRow.get(index);
-                        boolean equals = expectedTuple.equals(actualTuple);
+                        boolean equals = isEquals(fields.get(index).getType(), toleranceDiffActual, toleranceDiffPercentage, expectedTuple.getAfter(), actualTuple.getAfter());
                         fieldResult = new RecItCsvFieldResult(equals, expectedTuple.getBefore(), actualTuple.getBefore());
                     } else {
                         fieldResult = new RecItCsvFieldResult(false, expectedTuple.getBefore(), null);
@@ -149,5 +153,17 @@ public class RecItCsvReconcilier {
             }
         }
         return rowResults;
+    }
+
+    private boolean isEquals(RecItCsvFieldType fieldType, double toleranceDiffActual, double toleranceDiffPercentage, Object expected, Object actual) {
+        boolean equals = Objects.equals(expected, actual);
+        if (!equals && RecItCsvFieldType.NUMERIC == fieldType) {
+            equals = Objects.equals(expected, actual) || withinTolerance(toleranceDiffActual, toleranceDiffPercentage, (BigDecimal) expected, (BigDecimal) actual);
+        }
+        return equals;
+    }
+
+    private boolean withinTolerance(double toleranceDiffActual, double toleranceDiffPercentage, BigDecimal expected, BigDecimal actual) {
+        return false;
     }
 }

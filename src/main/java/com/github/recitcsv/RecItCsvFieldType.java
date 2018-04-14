@@ -1,7 +1,7 @@
 package com.github.recitcsv;
 
 public enum RecItCsvFieldType {
-    BOOLEAN, STRING, NUMERIC, DECIMAL, DATE, TIME, DATETIME;
+    BOOLEAN, STRING, NUMERIC, DATE, TIME, DATETIME;
 
     public static RecItCsvFieldType find(String string) {
         for (RecItCsvFieldType type : RecItCsvFieldType.values()) {

@@ -17,7 +17,7 @@ public class RecItCsv {
                 throw new Exception("The supplied configuration file either does not exist or cannot be read.");
             }
         } else {
-            throw new Exception("Path to configuration file must be passed as an argument, i.e. 'java com.github.recitcsv.RecItCsv /home/user/rec-configuration.yaml'");
+            throw new Exception("Path to configuration file must be passed as an argument, i.e. 'java " + RecItCsv.class.getName() + " /home/user/rec-configuration.yaml'");
         }
     }
 

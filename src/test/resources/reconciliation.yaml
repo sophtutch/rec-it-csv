@@ -18,7 +18,7 @@ files:
         type: 'STRING'
         key: 'true'
       - name: 'VALUE'
-        type: 'DECIMAL'
+        type: 'NUMERIC'
         key: 'false'
 
   - name: 'file2.dat'
