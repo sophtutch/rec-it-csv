@@ -1,6 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
 repositories {
     mavenCentral()
 }
@@ -11,4 +14,45 @@ dependencies {
     compile 'org.thymeleaf:thymeleaf:3.0.9.RELEASE'
 
     testCompile 'junit:junit:4.12'
+}
+
+group 'com.github.recitcsv'
+version '1.0.0.RELEASE'
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+task sourceJar(type: Jar) {
+    classifier "sources"
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier "javadoc"
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives jar
+    archives sourceJar
+    archives javadocJar
+}
+
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact(sourceJar) {
+                classifier = 'sources'
+            }
+            artifact(javadocJar) {
+                classifier = 'javadoc'
+            }
+        }
+    }
 }
