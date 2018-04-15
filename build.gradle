@@ -16,9 +16,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-group 'com.github.sophtutch.recitcsv'
-version '1.0.0.RELEASE'
-
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 task sourceJar(type: Jar) {
@@ -45,6 +42,10 @@ signing {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            groupId 'com.github.sophtutch'
+            artifactId 'recitcsv'
+            version '1.0.0-SNAPSHOT'
+
             from components.java
 
             artifact(sourceJar) {
@@ -52,6 +53,19 @@ publishing {
             }
             artifact(javadocJar) {
                 classifier = 'javadoc'
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username sonatypeUsername
+                password sonatypePassword
+            }
+            if (isReleaseVersion) {
+                url("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            } else {
+                url("https://oss.sonatype.org/content/repositories/snapshots")
             }
         }
     }
