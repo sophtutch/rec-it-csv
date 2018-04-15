@@ -1,4 +1,4 @@
-package com.github.recitcsv;
+package com.github.sophtutch.recitcsv;
 
 import org.junit.Rule;
 import org.junit.Test;

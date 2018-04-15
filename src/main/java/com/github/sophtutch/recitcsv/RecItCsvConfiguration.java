@@ -1,4 +1,4 @@
-package com.github.recitcsv;
+package com.github.sophtutch.recitcsv;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

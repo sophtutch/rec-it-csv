@@ -1,4 +1,4 @@
-package com.github.recitcsv;
+package com.github.sophtutch.recitcsv;
 
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;

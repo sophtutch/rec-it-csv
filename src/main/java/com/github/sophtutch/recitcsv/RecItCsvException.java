@@ -1,4 +1,4 @@
-package com.github.recitcsv;
+package com.github.sophtutch.recitcsv;
 
 public class RecItCsvException extends RuntimeException {
     RecItCsvException(String message) {

@@ -16,7 +16,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-group 'com.github.recitcsv'
+group 'com.github.sophtutch.recitcsv'
 version '1.0.0.RELEASE'
 
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
