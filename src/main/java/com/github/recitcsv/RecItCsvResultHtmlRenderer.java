@@ -11,9 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,7 @@ class RecItCsvResultHtmlRenderer {
         this.configuration = configuration;
     }
 
-    void render(List<RecItCsvResult> results) throws IOException {
+    List<Path> render(Path outputPath, RecItCsvResult result) throws IOException {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setPrefix("templates/");
@@ -34,9 +33,8 @@ class RecItCsvResultHtmlRenderer {
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
 
-        Path tmp = Paths.get("tmp");
-        if (Files.notExists(tmp)) {
-            tmp = Files.createDirectory(tmp);
+        if (Files.notExists(outputPath)) {
+            outputPath = Files.createDirectory(outputPath);
         }
 
         Path expectedDir = configuration.getExpectedDir().orElse(Paths.get("")).toAbsolutePath();
@@ -44,14 +42,17 @@ class RecItCsvResultHtmlRenderer {
         Double numericFieldDiffToleranceActual = configuration.getNumericFieldDiffToleranceActual().orElse(null);
         Double numericFieldDiffTolerancePercent = configuration.getNumericFieldDiffTolerancePercent().orElse(null);
 
-        Map<String, String> resultFileNames = new LinkedHashMap<>();
-        for (RecItCsvResult result : results) {
-            boolean matched = result.isMatched();
-            List<String> missingFromExpected = result.getMissingFromExpected();
-            List<String> missingFromActual = result.getMissingFromActual();
-            List<RecItCsvRowResult> rowResults = result.getRowResults() == null ? null : result.getRowResults().stream().filter(row -> !row.isMatched()).collect(Collectors.toList());
+        List<RecItCsvTuple3<String, String, Boolean>> resultFileNames = new LinkedList<>();
+        for (RecItCsvFileResult fileResult : result.getFileResults()) {
+            boolean matched = fileResult.isMatched();
+            List<String> missingFromExpected = nullIfNullOrEmpty(fileResult.getMissingFromExpected());
+            List<String> missingFromActual = nullIfNullOrEmpty(fileResult.getMissingFromActual());
+            List<RecItCsvRowResult> rowResults = nullIfNullOrEmpty(fileResult.getRowResults());
+            if (rowResults != null) {
+                rowResults = nullIfNullOrEmpty(rowResults.stream().filter(row -> !row.isMatched()).collect(Collectors.toList()));
+            }
 
-            RecItCsvConfiguration.FileConfiguration fileConfiguration = result.getFileConfiguration();
+            RecItCsvConfiguration.FileConfiguration fileConfiguration = fileResult.getFileConfiguration();
 
             Path fileExpectedDir = fileConfiguration.getExpectedDir().orElse(expectedDir).toAbsolutePath();
             Path fileActualDir = fileConfiguration.getActualDir().orElse(actualDir).toAbsolutePath();
@@ -74,21 +75,21 @@ class RecItCsvResultHtmlRenderer {
             context.setVariable("missingFromExpected", missingFromExpected);
             context.setVariable("missingFromActual", missingFromActual);
             context.setVariable("rowResults", rowResults);
-            context.setVariable("errorMessage", result.getErrorMessage());
+            context.setVariable("errorMessage", fileResult.getErrorMessage());
 
             StringWriter stringWriter = new StringWriter();
             templateEngine.process("file", context, stringWriter);
 
-            Path resultFile = tmp.resolve(UUID.randomUUID().toString() + ".html");
+            Path resultFile = outputPath.resolve(UUID.randomUUID().toString() + ".html");
             Files.deleteIfExists(resultFile);
             Files.createFile(resultFile);
 
             Files.write(resultFile, stringWriter.toString().getBytes(), StandardOpenOption.APPEND);
-
-            resultFileNames.put(filePath, resultFile.getFileName().toString());
+            resultFileNames.add(new RecItCsvTuple3<>(filePath, resultFile.getFileName().toString(), matched));
         }
 
         Context context = new Context();
+        context.setVariable("matched", result.isMatched());
         context.setVariable("expectedDir", expectedDir);
         context.setVariable("actualDir", actualDir);
         context.setVariable("numericFieldDiffToleranceActual", numericFieldDiffToleranceActual);
@@ -98,10 +99,16 @@ class RecItCsvResultHtmlRenderer {
         StringWriter stringWriter = new StringWriter();
         templateEngine.process("home", context, stringWriter);
 
-        Path resultFile = tmp.resolve("home.html");
+        Path resultFile = outputPath.resolve("home.html");
         Files.deleteIfExists(resultFile);
         Files.createFile(resultFile);
 
         Files.write(resultFile, stringWriter.toString().getBytes(), StandardOpenOption.APPEND);
+
+        return resultFileNames.stream().map(t -> Paths.get(t.getFirst())).collect(Collectors.toList());
+    }
+
+    private <T> List<T> nullIfNullOrEmpty(List<T> orig) {
+        return orig == null || orig.isEmpty() ? null : orig;
     }
 }

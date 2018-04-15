@@ -24,8 +24,9 @@ public class RecItCsvReconcilier {
         this.configuration = configuration;
     }
 
-    List<RecItCsvResult> reconcile() {
-        List<RecItCsvResult> results = new LinkedList<>();
+    RecItCsvResult reconcile() {
+        boolean matched = true;
+        List<RecItCsvFileResult> results = new LinkedList<>();
         for (RecItCsvConfiguration.FileConfiguration fileConfiguration : configuration.getFiles()) {
             Path expectedFile = fileConfiguration.getExpectedDir().orElse(configuration.getExpectedDir().orElseThrow(() -> new RecItCsvException("The expected result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath().resolve(fileConfiguration.getName());
             Path actualFile = fileConfiguration.getActualDir().orElse(configuration.getActualDir().orElseThrow(() -> new RecItCsvException("The actual result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath().resolve(fileConfiguration.getName());
@@ -46,16 +47,19 @@ public class RecItCsvReconcilier {
 
                     List<RecItCsvRowResult> rowResults = reconcileRows(fields, toleranceDiffActual, toleranceDiffPercentage, expectedRows, actualRows);
 
-                    boolean matched = missingFromExpected.isEmpty() && missingFromActual.isEmpty() && rowResults.stream().allMatch(RecItCsvRowResult::isMatched);
-                    results.add(new RecItCsvResult(matched, fileConfiguration, missingFromExpected, missingFromActual, rowResults));
+                    boolean fileMatched = missingFromExpected.isEmpty() && missingFromActual.isEmpty() && rowResults.stream().allMatch(RecItCsvRowResult::isMatched);
+                    matched &= fileMatched;
+                    results.add(new RecItCsvFileResult(fileMatched, fileConfiguration, missingFromExpected, missingFromActual, rowResults));
                 } catch (IOException e) {
-                    results.add(new RecItCsvResult(false, fileConfiguration, "Failed to read files for reconciliation. " + e.getMessage()));
+                    matched = false;
+                    results.add(new RecItCsvFileResult(false, fileConfiguration, "Failed to read files for reconciliation. " + e.getMessage()));
                 }
             } else {
-                results.add(new RecItCsvResult(false, fileConfiguration, "Expected file " + (expectedFilePresent ? "" : "not ") + "present. Actual file " + (actualFilePresent ? "" : "not ") + "present."));
+                matched = false;
+                results.add(new RecItCsvFileResult(false, fileConfiguration, "Expected file " + (expectedFilePresent ? "" : "not ") + "present. Actual file " + (actualFilePresent ? "" : "not ") + "present."));
             }
         }
-        return results;
+        return new RecItCsvResult(matched, results);
     }
 
     private Optional<Path> checkFileExists(Path file) {
@@ -72,7 +76,7 @@ public class RecItCsvReconcilier {
         return Files.lines(file)
                 .map(line -> {
                     List<String> rowKey = new LinkedList<>();
-                    List<RecItCsvTuple> row = new LinkedList<>();
+                    List<RecItCsvTuple2<String, Object>> row = new LinkedList<>();
 
                     String[] split = line.split(separator, fields.size());
                     for (int index = 0; index < split.length; index++) {
@@ -82,7 +86,7 @@ public class RecItCsvReconcilier {
                         if (fileField.isKey()) {
                             rowKey.add(string);
                         }
-                        row.add(new RecItCsvTuple(string, getObject(fileField.getType(), fileField.getFormat(), string)));
+                        row.add(new RecItCsvTuple2<>(string, getObject(fileField.getType(), fileField.getFormat(), string)));
                     }
                     return new RecItCsvRow(rowKey, line, row);
                 })
@@ -132,20 +136,20 @@ public class RecItCsvReconcilier {
             if (actualRows.containsKey(key)) {
                 RecItCsvRow actualFields = actualRows.get(key);
 
-                List<RecItCsvTuple> expectedRow = expectedFields.getRow();
-                List<RecItCsvTuple> actualRow = actualFields.getRow();
+                List<RecItCsvTuple2<String, Object>> expectedRow = expectedFields.getRow();
+                List<RecItCsvTuple2<String, Object>> actualRow = actualFields.getRow();
 
                 boolean fieldsMatch = true;
                 for (int index = 0; index < expectedRow.size(); index++) {
                     RecItCsvFieldResult fieldResult;
-                    RecItCsvTuple expectedTuple = expectedRow.get(index);
+                    RecItCsvTuple2<String, Object> expectedTuple = expectedRow.get(index);
                     if (index < actualRow.size()) {
-                        RecItCsvTuple actualTuple = actualRow.get(index);
-                        boolean equals = isEquals(fields.get(index).getType(), toleranceDiffActual, toleranceDiffPercentage, expectedTuple.getAfter(), actualTuple.getAfter());
-                        fieldResult = new RecItCsvFieldResult(equals, expectedTuple.getBefore(), actualTuple.getBefore());
+                        RecItCsvTuple2<String, Object> actualTuple = actualRow.get(index);
+                        boolean equals = isEquals(fields.get(index).getType(), toleranceDiffActual, toleranceDiffPercentage, expectedTuple.getSecond(), actualTuple.getSecond());
+                        fieldResult = new RecItCsvFieldResult(equals, expectedTuple.getFirst(), actualTuple.getFirst());
                         fieldsMatch &= equals;
                     } else {
-                        fieldResult = new RecItCsvFieldResult(false, expectedTuple.getBefore(), null);
+                        fieldResult = new RecItCsvFieldResult(false, expectedTuple.getFirst(), null);
                         fieldsMatch &= false;
                     }
                     fieldResults.add(fieldResult);

@@ -11,6 +11,7 @@ class RecItCsvConfiguration {
 
     private String expectedDir;
     private String actualDir;
+    private String outputDir;
 
     private Double numericFieldDiffToleranceActual;
     private Double numericFieldDiffTolerancePercent;
@@ -55,6 +56,10 @@ class RecItCsvConfiguration {
 
     void setFiles(Collection<FileConfiguration> files) {
         this.files = files;
+    }
+
+    public Path getOutputDir() {
+        return Paths.get(outputDir);
     }
 
     static class FileConfiguration {

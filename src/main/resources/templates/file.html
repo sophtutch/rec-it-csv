@@ -9,8 +9,9 @@
     <h1><span th:text="${name}"></span></h1>
     <hr/>
     <p>
+    <h2 th:text="'File status: ' + ${matched ? 'Success' : 'Fail'}"></h2>
     <table th:border="1">
-        <h2>File Configuration</h2>
+        <h3>File Configuration</h3>
         <tr>
             <td>Separator</td>
             <td th:text="${separator}"></td>
@@ -35,7 +36,7 @@
     </p>
     <p>
     <table th:if="${missingFromExpected}" th:border="1">
-        <h2 th:text="'Lines missing from expected: ' + ${missingFromExpected.size()}"></h2>
+        <h2 th:text="'Unexpected additional lines: ' + ${missingFromExpected.size()}"></h2>
         <tr th:each="line : ${missingFromExpected}">
             <td th:text="${line}"></td>
         </tr>
@@ -43,7 +44,7 @@
     </p>
     <p>
     <table th:if="${missingFromActual}" th:border="1">
-        <h2 th:text="'Lines missing from actual: ' + ${missingFromActual.size()}"></h2>
+        <h2 th:text="'Expected, but missing lines: ' + ${missingFromActual.size()}"></h2>
         <tr th:each="line : ${missingFromActual}">
             <td th:text="${line}"></td>
         </tr>
@@ -51,12 +52,10 @@
     </p>
     <p>
     <p>
-    <table th:if="${errorMessage}" th:border="1">
+    <div th:if="${errorMessage}" th:border="1">
         <h2>An Error Occurred</h2>
-        <tr>
-            <td th:text="${errorMessage}"></td>
-        </tr>
-    </table>
+        <span th:text="${errorMessage}"></span>
+    </div>
     </p>
     <p>
     <table th:if="${rowResults}" th:border="1">

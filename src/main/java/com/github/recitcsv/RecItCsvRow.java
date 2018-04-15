@@ -7,9 +7,9 @@ class RecItCsvRow {
 
     private final List<String> key;
     private final String line;
-    private final List<RecItCsvTuple> row;
+    private final List<RecItCsvTuple2<String, Object>> row;
 
-    RecItCsvRow(List<String> key, String line, List<RecItCsvTuple> row) {
+    RecItCsvRow(List<String> key, String line, List<RecItCsvTuple2<String, Object>> row) {
         this.key = key;
         this.line = line;
         this.row = row;
@@ -23,7 +23,7 @@ class RecItCsvRow {
         return line;
     }
 
-    List<RecItCsvTuple> getRow() {
+    List<RecItCsvTuple2<String, Object>> getRow() {
         return row;
     }
 

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class RecItCsv {
 
@@ -23,8 +22,9 @@ public class RecItCsv {
 
     public void reconcile(Path configurationFilePath) throws IOException {
         RecItCsvConfiguration configuration = new RecItCsvConfigurationReader().read(configurationFilePath);
+        Path outputDir = configuration.getOutputDir();
 
-        List<RecItCsvResult> results = new RecItCsvReconcilier(configuration).reconcile();
-        new RecItCsvResultHtmlRenderer(configuration).render(results);
+        RecItCsvResult result = new RecItCsvReconcilier(configuration).reconcile();
+        new RecItCsvResultHtmlRenderer(configuration).render(outputDir, result);
     }
 }

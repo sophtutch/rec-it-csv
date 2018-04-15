@@ -1,5 +1,6 @@
 expectedDir: 'expected'
 actualDir: 'actual'
+outputDir: './'
 
 numericFieldDiffToleranceActual: 0.01
 numericFieldDiffTolerancePercent: 1
@@ -29,3 +30,19 @@ files:
       - name: 'ID'
         type: 'STRING'
         key: 'true'
+
+  - name: 'file3.dat'
+    expectedDir: 'src/test/resources/expected'
+    actualDir: 'src/test/resources/actual'
+    separator: ','
+    numericFieldDiffTolerancePercent: 10
+    fields:
+      - name: 'ID'
+        type: 'NUMERIC'
+        key: 'true'
+      - name: 'NAME'
+        type: 'STRING'
+        key: 'true'
+      - name: 'VALUE'
+        type: 'NUMERIC'
+        key: 'false'

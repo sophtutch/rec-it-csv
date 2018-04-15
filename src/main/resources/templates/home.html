@@ -9,8 +9,9 @@
     <h1>File Reconciliation Results</h1>
     <hr/>
     <p>
+    <h2 th:text="'Overall status: ' + ${matched ? 'Success' : 'Fail'}"></h2>
     <table th:border="1">
-        <h2>Configuration</h2>
+        <h3>Configuration</h3>
         <tr>
             <td>Expected files directory</td>
             <td th:text="${expectedDir}"></td>
@@ -31,14 +32,14 @@
     </p>
     <p>
     <table th:border="1">
-        <h2>Files</h2>
+        <h3>Files</h3>
         <tr>
             <th>Name</th>
             <th>Matched</th>
         </tr>
-        <tr th:each="entry : ${fileNames}">
-            <td><a th:href="__${entry.value}__" th:text="${entry.key}"></a></td>
-            <td></td>
+        <tr th:each="file : ${fileNames}">
+            <td><a th:href="__${file.second}__" th:text="${file.first}"></a></td>
+            <td th:text="${file.third}"></td>
         </tr>
     </table>
     </p>
