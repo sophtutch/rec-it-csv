@@ -87,9 +87,9 @@ class RecItCsvResultHtmlRenderer {
 
     private void writeHomeFile(Path outputPath, TemplateEngine templateEngine, Context context) throws IOException {
         StringWriter stringWriter = new StringWriter();
-        templateEngine.process("home", context, stringWriter);
+        templateEngine.process("index", context, stringWriter);
 
-        Path resultFile = outputPath.resolve("home.html");
+        Path resultFile = outputPath.resolve("index.html");
         Files.deleteIfExists(resultFile);
         Files.createFile(resultFile);
 
