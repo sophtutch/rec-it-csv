@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RecItCsvReconcilier {
 
@@ -27,9 +28,11 @@ public class RecItCsvReconcilier {
     RecItCsvResult reconcile() {
         boolean matched = true;
         List<RecItCsvFileResult> results = new LinkedList<>();
-        for (RecItCsvConfiguration.FileConfiguration fileConfiguration : configuration.getFiles()) {
-            Path expectedFile = fileConfiguration.getExpectedDir().orElse(configuration.getExpectedDir().orElseThrow(() -> new RecItCsvException("The expected result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath().resolve(fileConfiguration.getName());
-            Path actualFile = fileConfiguration.getActualDir().orElse(configuration.getActualDir().orElseThrow(() -> new RecItCsvException("The actual result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath().resolve(fileConfiguration.getName());
+        for (RecItCsvTuple3<RecItCsvConfiguration.FileConfiguration, Path, Path> tuple : buildExpectedFileList()) {
+            RecItCsvConfiguration.FileConfiguration fileConfiguration = tuple.getFirst();
+
+            Path expectedFile = tuple.getSecond();
+            Path actualFile = tuple.getThird();
 
             List<RecItCsvConfiguration.FileField> fields = fileConfiguration.getFields();
 
@@ -49,17 +52,42 @@ public class RecItCsvReconcilier {
 
                     boolean fileMatched = missingFromExpected.isEmpty() && missingFromActual.isEmpty() && rowResults.stream().allMatch(RecItCsvRowResult::isMatched);
                     matched &= fileMatched;
-                    results.add(new RecItCsvFileResult(fileMatched, fileConfiguration, missingFromExpected, missingFromActual, rowResults));
+                    results.add(new RecItCsvFileResult(fileMatched, expectedFile, actualFile, fileConfiguration, missingFromExpected, missingFromActual, rowResults));
                 } catch (IOException e) {
                     matched = false;
-                    results.add(new RecItCsvFileResult(false, fileConfiguration, "Failed to read files for reconciliation. " + e.getMessage()));
+                    results.add(new RecItCsvFileResult(false, expectedFile, actualFile, fileConfiguration, "Failed to read files for reconciliation. " + e.getMessage()));
                 }
             } else {
                 matched = false;
-                results.add(new RecItCsvFileResult(false, fileConfiguration, "Expected file " + (expectedFilePresent ? "" : "not ") + "present. Actual file " + (actualFilePresent ? "" : "not ") + "present."));
+                results.add(new RecItCsvFileResult(false, expectedFile, actualFile, fileConfiguration, "Expected file " + (expectedFilePresent ? "" : "not ") + "present. Actual file " + (actualFilePresent ? "" : "not ") + "present."));
             }
         }
         return new RecItCsvResult(matched, results);
+    }
+
+    private List<RecItCsvTuple3<RecItCsvConfiguration.FileConfiguration, Path, Path>> buildExpectedFileList() {
+//        configuration.getFiles().stream().flatMap(fileConfiguration -> fileConfiguration.getExpectedDir().isPresent() ? Stream.of(fileConfiguration.getExpectedDir().get()) : Stream.empty()).co
+
+        return configuration.getFiles().stream()
+                .flatMap(fileConfiguration -> {
+                    Path expectedDirRoot = fileConfiguration.getExpectedDir().orElse(configuration.getExpectedDir().orElseThrow(() -> new RecItCsvException("The expected result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath();
+                    Path actualDirRoot = fileConfiguration.getActualDir().orElse(configuration.getActualDir().orElseThrow(() -> new RecItCsvException("The actual result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath();
+
+                    try {
+                        return Stream.concat(Files.walk(expectedDirRoot).filter(file -> Files.isRegularFile(file)).map(expectedDirRoot::relativize), Files.walk(actualDirRoot).filter(file -> Files.isRegularFile(file)).map(actualDirRoot::relativize)).distinct()
+                                .filter(file -> file.getFileName().toString().endsWith(fileConfiguration.getName()))
+                                .map(file -> {
+                                    Path expectedFile = expectedDirRoot.resolve(file);
+                                    Path actualFile = actualDirRoot.resolve(file);
+
+                                    System.out.println(expectedFile + " " + actualFile);
+                                    return new RecItCsvTuple3<>(fileConfiguration, expectedFile, actualFile);
+                                });
+                    } catch (IOException e) {
+                        throw new RecItCsvException("Failed to build expected file list. ", e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     private Optional<Path> checkFileExists(Path file) {

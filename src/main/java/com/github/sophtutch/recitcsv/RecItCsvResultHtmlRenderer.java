@@ -32,9 +32,15 @@ class RecItCsvResultHtmlRenderer {
         Double numericFieldDiffToleranceActual = configuration.getNumericFieldDiffToleranceActual().orElse(null);
         Double numericFieldDiffTolerancePercent = configuration.getNumericFieldDiffTolerancePercent().orElse(null);
 
-        List<RecItCsvTuple3<String, String, Boolean>> resultFileNames = new LinkedList<>();
+        List<RecItCsvTuple4<String, String, String, Boolean>> resultFileNames = new LinkedList<>();
         for (RecItCsvFileResult fileResult : result.getFileResults()) {
             boolean matched = fileResult.isMatched();
+
+            Path expectedFile = fileResult.getExpectedFile();
+            Path actualFile = fileResult.getActualFile();
+
+            Path expectedFileDir = expectedFile.getParent();
+            Path actualFileDir = actualFile.getParent();
 
             List<String> missingFromExpected = nullIfNullOrEmpty(fileResult.getMissingFromExpected());
             List<String> missingFromActual = nullIfNullOrEmpty(fileResult.getMissingFromActual());
@@ -47,24 +53,21 @@ class RecItCsvResultHtmlRenderer {
             String errorMessage = fileResult.getErrorMessage();
 
             RecItCsvConfiguration.FileConfiguration fileConfiguration = fileResult.getFileConfiguration();
-            String name = fileConfiguration.getName();
             String separator = fileConfiguration.getSeparator();
-            Path fileExpectedDir = fileConfiguration.getExpectedDir().orElse(expectedDir).toAbsolutePath();
-            Path fileActualDir = fileConfiguration.getActualDir().orElse(actualDir).toAbsolutePath();
             List<RecItCsvConfiguration.FileField> fields = fileConfiguration.getFields();
 
-            String filePath = fileActualDir.resolve(name).toString();
+            String filePath = actualFile.getFileName().toString();
 
             Double diffToleranceActual = fileConfiguration.getNumericFieldDiffToleranceActual().orElse(numericFieldDiffToleranceActual);
             Double diffTolerancePercent = fileConfiguration.getNumericFieldDiffTolerancePercent().orElse(numericFieldDiffTolerancePercent);
 
-            Context context = createFileContext(matched, filePath, separator, fields, fileExpectedDir, fileActualDir, diffToleranceActual, diffTolerancePercent, missingFromExpected, missingFromActual, rowResults, errorMessage);
+            Context context = createFileContext(matched, filePath, separator, fields, expectedFileDir, actualFileDir, diffToleranceActual, diffTolerancePercent, missingFromExpected, missingFromActual, rowResults, errorMessage);
 
             StringWriter stringWriter = new StringWriter();
             templateEngine.process("file", context, stringWriter);
 
             Path resultFile = writeResultFile(outputPath, stringWriter.toString());
-            resultFileNames.add(new RecItCsvTuple3<>(filePath, resultFile.getFileName().toString(), fileResult.isMatched()));
+            resultFileNames.add(new RecItCsvTuple4<>(actualFileDir.toString(), filePath, resultFile.getFileName().toString(), fileResult.isMatched()));
         }
         writeHomeFile(outputPath, templateEngine, createContext(expectedDir, actualDir, numericFieldDiffToleranceActual, numericFieldDiffTolerancePercent, resultFileNames, result.isMatched()));
 
@@ -114,7 +117,7 @@ class RecItCsvResultHtmlRenderer {
         return context;
     }
 
-    private Context createContext(Path expectedDir, Path actualDir, Double numericFieldDiffToleranceActual, Double numericFieldDiffTolerancePercent, List<RecItCsvTuple3<String, String, Boolean>> resultFileNames, boolean matched) {
+    private Context createContext(Path expectedDir, Path actualDir, Double numericFieldDiffToleranceActual, Double numericFieldDiffTolerancePercent, List<RecItCsvTuple4<String, String, String, Boolean>> resultFileNames, boolean matched) {
         Context context = new Context();
         context.setVariable("matched", matched);
         context.setVariable("expectedDir", expectedDir);

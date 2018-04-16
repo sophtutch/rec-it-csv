@@ -10,7 +10,7 @@
     <hr/>
     <p>
     <h2 th:text="'Overall status: ' + ${matched ? 'Success' : 'Fail'}"></h2>
-    <table th:border="1">
+    <table th:border="1" width="800">
         <h3>Configuration</h3>
         <tr>
             <td>Expected files directory</td>
@@ -31,15 +31,17 @@
     </table>
     </p>
     <p>
-    <table th:border="1">
+    <table th:border="1" width="800">
         <h3>Files</h3>
         <tr>
+            <th>Directory</th>
             <th>Name</th>
             <th>Matched</th>
         </tr>
         <tr th:each="file : ${fileNames}">
-            <td><a th:href="__${file.second}__" th:text="${file.first}"></a></td>
-            <td th:text="${file.third}"></td>
+            <td th:text="${file.first}"></td>
+            <td><a th:href="__${file.third}__" th:text="${file.second}"></a></td>
+            <td th:text="${file.fourth}"></td>
         </tr>
     </table>
     </p>

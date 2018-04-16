@@ -16,6 +16,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+version '1.0.0-SNAPSHOT'
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 task sourceJar(type: Jar) {
@@ -44,7 +45,6 @@ publishing {
         mavenJava(MavenPublication) {
             groupId 'com.github.sophtutch'
             artifactId 'recitcsv'
-            version '1.0.0-SNAPSHOT'
 
             from components.java
 
