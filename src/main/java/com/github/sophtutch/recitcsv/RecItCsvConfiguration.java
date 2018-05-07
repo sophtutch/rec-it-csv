@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class RecItCsvConfiguration {
 
@@ -122,11 +124,25 @@ class RecItCsvConfiguration {
         }
 
         List<FileField> getFields() {
-            return fields;
+            return fields.stream().flatMap(field -> field.getRepeat().isPresent() ? Stream.of(repeat(field)) : Stream.of(field)).collect(Collectors.toList());
         }
 
         void setFields(List<FileField> fields) {
             this.fields = fields;
+        }
+
+        private FileField[] repeat(FileField field) {
+            int repeatCount = field.getRepeat().orElse(0);
+            FileField[] repeated = new FileField[repeatCount];
+            for (int count = 0; count < repeatCount; count++) {
+                FileField copy = new FileField();
+                copy.setFormat(field.getFormat());
+                copy.setKey(field.isKey());
+                copy.setName(field.getName() + (count + 1));
+                copy.setType(field.getType().name());
+                repeated[count] = copy;
+            }
+            return repeated;
         }
     }
 
@@ -137,6 +153,8 @@ class RecItCsvConfiguration {
         private String format;
 
         private boolean key;
+
+        private Integer repeat;
 
         public String getName() {
             return name;
@@ -168,6 +186,14 @@ class RecItCsvConfiguration {
 
         void setKey(boolean key) {
             this.key = key;
+        }
+
+        public Optional<Integer> getRepeat() {
+            return Optional.ofNullable(repeat);
+        }
+
+        public void setRepeat(Integer repeat) {
+            this.repeat = repeat;
         }
     }
 }

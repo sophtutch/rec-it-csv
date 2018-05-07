@@ -24,6 +24,6 @@ public class RecItCsvTest {
 
         RecItCsvResult result = new RecItCsvReconcilier(configuration).reconcile();
         List<Path> resultFiles = new RecItCsvResultHtmlRenderer(configuration).render(outputDir, result);
-        assertEquals(6, resultFiles.size());
+        assertEquals(7, resultFiles.size());
     }
 }

@@ -42,7 +42,7 @@ signing {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            customizePom(pom)
+            makePom(pom)
 
             groupId 'com.github.sophtutch'
             artifactId 'recitcsv'
@@ -57,7 +57,6 @@ publishing {
                     extension = 'pom.asc'
                 }
             }
-
 
             artifact(sourceJar) {
                 classifier = 'sources'
@@ -95,11 +94,11 @@ publishing {
     }
 }
 
-def customizePom(pom) {
+def makePom(pom) {
     pom.withXml {
         def root = asNode()
         root.dependencies.removeAll { dep -> dep.scope == "test" }
-        root.children().last() + {
+        root.children().first() + {
             resolveStrategy = DELEGATE_FIRST
 
             name 'Rec-It-CSV'

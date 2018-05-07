@@ -66,8 +66,6 @@ public class RecItCsvReconcilier {
     }
 
     private List<RecItCsvTuple3<RecItCsvConfiguration.FileConfiguration, Path, Path>> buildExpectedFileList() {
-//        configuration.getFiles().stream().flatMap(fileConfiguration -> fileConfiguration.getExpectedDir().isPresent() ? Stream.of(fileConfiguration.getExpectedDir().get()) : Stream.empty()).co
-
         return configuration.getFiles().stream()
                 .flatMap(fileConfiguration -> {
                     Path expectedDirRoot = fileConfiguration.getExpectedDir().orElse(configuration.getExpectedDir().orElseThrow(() -> new RecItCsvException("The expected result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath();

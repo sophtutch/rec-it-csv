@@ -1,7 +1,7 @@
 package com.github.sophtutch.recitcsv;
 
 public enum RecItCsvFieldType {
-    BOOLEAN, STRING, NUMERIC, DATE, TIME, DATETIME;
+    BOOLEAN, STRING, NUMERIC, DATE, TIME, DATETIME, IGNORE;
 
     public static RecItCsvFieldType find(String string) {
         for (RecItCsvFieldType type : RecItCsvFieldType.values()) {

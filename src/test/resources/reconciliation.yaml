@@ -20,7 +20,6 @@ files:
         key: 'true'
       - name: 'VALUE'
         type: 'NUMERIC'
-        key: 'false'
 
   - name: 'file2.dat'
     separator: '|'
@@ -45,7 +44,6 @@ files:
         key: 'true'
       - name: 'VALUE'
         type: 'NUMERIC'
-        key: 'false'
 
   - name: 'file4.dat'
     separator: '|'
@@ -128,5 +126,16 @@ files:
         type: 'STRING'
         key: 'true'
       - name: '20'
+        type: 'IGNORE'
+
+  - name: 'file7.dat'
+    separator: ','
+    numericFieldDiffToleranceActual: 0
+    numericFieldDiffTolerancePercent: 2
+    fields:
+      - name: 'ID1'
         type: 'STRING'
-        key: 'false'
+        key: 'true'
+      - name: 'FIELD'
+        type: 'STRING'
+        repeat: 19
