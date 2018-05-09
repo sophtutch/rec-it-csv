@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -104,7 +105,7 @@ public class RecItCsvReconcilier {
                     List<String> rowKey = new LinkedList<>();
                     List<RecItCsvTuple2<String, Object>> row = new LinkedList<>();
 
-                    String[] split = line.split(separator, fields.size());
+                    String[] split = line.split(Pattern.quote(separator), fields.size());
                     for (int index = 0; index < split.length; index++) {
                         RecItCsvConfiguration.FileField fileField = fields.get(index);
 

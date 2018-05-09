@@ -129,7 +129,7 @@ files:
         type: 'IGNORE'
 
   - name: 'file7.dat'
-    separator: ','
+    separator: '|'
     numericFieldDiffToleranceActual: 0
     numericFieldDiffTolerancePercent: 2
     fields:
