@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -107,9 +109,12 @@ public class RecItCsvReconcilier {
     private Map<List<String>, RecItCsvRow> readRows(RecItCsvConfiguration.FileConfiguration fileConfiguration, Path file) throws IOException {
         String separator = fileConfiguration.getSeparator();
 
+        AtomicInteger count = new AtomicInteger();
         List<RecItCsvConfiguration.FileField> fields = fileConfiguration.getFields();
         return Files.lines(file)
                 .map(line -> {
+                    int lineNunmber = count.incrementAndGet();
+
                     List<String> rowKey = new LinkedList<>();
                     List<RecItCsvTuple2<String, Object>> row = new LinkedList<>();
 
@@ -121,7 +126,14 @@ public class RecItCsvReconcilier {
                         if (fileField.isKey()) {
                             rowKey.add(string);
                         }
-                        row.add(new RecItCsvTuple2<>(string, getObject(fileField.getType(), fileField.getFormat(), string)));
+
+                        Object object;
+                        try {
+                            object = getObject(fileField.getType(), fileField.getFormat(), string);
+                        } catch (Exception e) {
+                            throw new RecItCsvException(MessageFormat.format("Failed to parse {0} to type {1} using format {2} on line number {3} in file {4}", string, fileField.getType(), fileField.getFormat(), lineNunmber, file.toAbsolutePath()), e);
+                        }
+                        row.add(new RecItCsvTuple2<>(string, object));
                     }
                     return new RecItCsvRow(rowKey, line, row);
                 })
