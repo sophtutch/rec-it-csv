@@ -40,7 +40,7 @@ class RecItCsvConfiguration {
         return Optional.ofNullable(numericFieldDiffToleranceActual);
     }
 
-    void setNumericFieldDiffToleranceActual(double numericFieldDiffToleranceActual) {
+    void setNumericFieldDiffToleranceActual(Double numericFieldDiffToleranceActual) {
         this.numericFieldDiffToleranceActual = numericFieldDiffToleranceActual;
     }
 
@@ -48,7 +48,7 @@ class RecItCsvConfiguration {
         return Optional.ofNullable(numericFieldDiffTolerancePercent);
     }
 
-    void setNumericFieldDiffTolerancePercent(double numericFieldDiffTolerancePercent) {
+    void setNumericFieldDiffTolerancePercent(Double numericFieldDiffTolerancePercent) {
         this.numericFieldDiffTolerancePercent = numericFieldDiffTolerancePercent;
     }
 
@@ -62,6 +62,10 @@ class RecItCsvConfiguration {
 
     public Path getOutputDir() {
         return Paths.get(outputDir);
+    }
+
+    public void setOutputDir(String outputDir) {
+        this.outputDir = outputDir;
     }
 
     static class FileConfiguration {

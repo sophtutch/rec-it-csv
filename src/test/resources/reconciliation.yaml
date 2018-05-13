@@ -139,3 +139,15 @@ files:
       - name: 'FIELD'
         type: 'STRING'
         repeat: 19
+
+  - name: 'glob:file8-????????.dat'
+    separator: '|'
+    numericFieldDiffToleranceActual: 0
+    numericFieldDiffTolerancePercent: 2
+    fields:
+      - name: 'ID1'
+        type: 'STRING'
+        key: 'true'
+      - name: 'FIELD'
+        type: 'STRING'
+        repeat: 19

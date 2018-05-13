@@ -2,6 +2,7 @@ package com.github.sophtutch.recitcsv;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -29,7 +30,8 @@ public class RecItCsvReconcilier {
     RecItCsvResult reconcile() {
         boolean matched = true;
         List<RecItCsvFileResult> results = new LinkedList<>();
-        for (RecItCsvTuple3<RecItCsvConfiguration.FileConfiguration, Path, Path> tuple : buildExpectedFileList()) {
+        List<RecItCsvTuple3<RecItCsvConfiguration.FileConfiguration, Path, Path>> expectedFiles = buildExpectedFileList();
+        for (RecItCsvTuple3<RecItCsvConfiguration.FileConfiguration, Path, Path> tuple : expectedFiles) {
             RecItCsvConfiguration.FileConfiguration fileConfiguration = tuple.getFirst();
 
             Path expectedFile = tuple.getSecond();
@@ -72,14 +74,20 @@ public class RecItCsvReconcilier {
                     Path expectedDirRoot = fileConfiguration.getExpectedDir().orElse(configuration.getExpectedDir().orElseThrow(() -> new RecItCsvException("The expected result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath();
                     Path actualDirRoot = fileConfiguration.getActualDir().orElse(configuration.getActualDir().orElseThrow(() -> new RecItCsvException("The actual result directory configured for '" + fileConfiguration.getName() + "' does not exist or is not a directory"))).toAbsolutePath();
 
+                    String name = fileConfiguration.getName();
                     try {
                         return Stream.concat(Files.walk(expectedDirRoot).filter(file -> Files.isRegularFile(file)).map(expectedDirRoot::relativize), Files.walk(actualDirRoot).filter(file -> Files.isRegularFile(file)).map(actualDirRoot::relativize)).distinct()
-                                .filter(file -> file.getFileName().toString().endsWith(fileConfiguration.getName()))
+                                .filter(file -> {
+                                    if (name.startsWith("glob:") || name.startsWith("regex:")) {
+                                        return FileSystems.getDefault().getPathMatcher(name).matches(file);
+                                    } else {
+                                        return file.getFileName().toString().endsWith(fileConfiguration.getName());
+                                    }
+                                })
                                 .map(file -> {
                                     Path expectedFile = expectedDirRoot.resolve(file);
                                     Path actualFile = actualDirRoot.resolve(file);
 
-                                    System.out.println(expectedFile + " " + actualFile);
                                     return new RecItCsvTuple3<>(fileConfiguration, expectedFile, actualFile);
                                 });
                     } catch (IOException e) {
