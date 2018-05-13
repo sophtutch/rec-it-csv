@@ -1,16 +1,27 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${name}">File Reconciliation Result</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title th:text="${name}">File Reconciliation Result</title>
+    <style>
+        .table, .table td{
+            border-color: black;
+            border-width: 2;
+        }
+    </style>
 </head>
-<body>
-<div>
-    <h1><span th:text="${name}"></span></h1>
+<body class="p-3 mb-2 bg-dark">
+<div class="container p-3 mb-2 bg-white text-black">
+    <nav class="text-white">
+        <p th:class="${matched} ? 'p-3 mb-2 bg-success' : 'p-3 mb-2 bg-danger'" th:text="${matched ? 'Matched' : 'Not matched'}"></p>
+    </nav>
+    <h1 class="display-3"><span th:text="${name}"></span></h1>
     <hr/>
-    <p>
-    <h2 th:text="'File status: ' + ${matched ? 'Success' : 'Fail'}"></h2>
-    <table th:border="1" width="100%">
+    <table class="table table-bordered table-sm">
         <h3>File Configuration</h3>
         <tr>
             <td>Separator</td>
@@ -33,44 +44,49 @@
             <td th:text="${numericFieldDiffTolerancePercent}"></td>
         </tr>
     </table>
-    </p>
-    <p>
-    <table th:if="${missingFromExpected}" th:border="1" width="100%">
-        <h2 th:text="'Unexpected additional lines: ' + ${missingFromExpected.size()}"></h2>
-        <tr th:each="line : ${missingFromExpected}">
-            <td th:text="${line}"></td>
-        </tr>
-    </table>
-    </p>
-    <p>
-    <table th:if="${missingFromActual}" th:border="1" width="100%">
-        <h2 th:text="'Expected, but missing lines: ' + ${missingFromActual.size()}"></h2>
+    <div class="table-responsive">
+        <table th:if="${missingFromExpected}" class="table table-bordered table-sm table-hover">
+            <h2 class="display-5" th:text="'Unexpected additional lines: ' + ${missingFromExpected.size()}"></h2>
+            <tr th:each="line : ${missingFromExpected}">
+                <td th:text="${line}"></td>
+            </tr>
+        </table>
+    </div>
+    <div class="table-responsive">
+    <table th:if="${missingFromActual}" class="table table-bordered table-sm table-hover">
+        <h2 class="display-5" th:text="'Expected, but missing lines: ' + ${missingFromActual.size()}"></h2>
         <tr th:each="line : ${missingFromActual}">
             <td th:text="${line}"></td>
         </tr>
     </table>
-    </p>
-    <p>
-    <p>
-    <div th:if="${errorMessage}" th:border="1">
-        <h2>An Error Occurred</h2>
+    </div>
+    <div th:if="${errorMessage}">
+        <h2 class="display-5">An Error Occurred</h2>
         <span th:text="${errorMessage}"></span>
     </div>
-    </p>
-    <p>
-    <table th:if="${rowResults}" th:border="1" width="100%">
-        <h2>Unmatched Rows</h2>
+    <div class="table-responsive">
+    <table th:if="${rowResults}" class="table table-bordered table-sm table-hover">
+        <h2 class="display-5">Unmatched Rows</h2>
+        <thead class="thead-dark">
         <tr>
             <th th:each="field : ${fields}" th:text="${field.name}"></th>
         </tr>
+        </thead>
+        <tbody>
         <tr th:each="row : ${rowResults}">
             <td th:each="field : ${row.fieldResults}" th:text="${field.actual}"></td>
         </tr>
+        </tbody>
     </table>
-    </p>
+    </div>
     <br/>
     <hr/>
-    <a th:href="@{index.html}">Home</a>
+    <footer th:class="${matched} ? 'p-3 mb-2 bg-success text-white' : 'p-3 mb-2 bg-danger text-white'">
+        <a th:class="text-white" th:href="@{index.html}">Home</a>
+    </footer>
 </div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
 </body>
 </html>
