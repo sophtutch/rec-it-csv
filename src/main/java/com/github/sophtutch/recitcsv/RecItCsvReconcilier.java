@@ -147,17 +147,17 @@ public class RecItCsvReconcilier {
     private Object getObject(RecItCsvFieldType type, String format, String string) {
         switch (type) {
             case BOOLEAN:
-                return isNotNullOrEmpty(string) ? Boolean.valueOf(string) : null;
+                return isNotNullOrEmpty(string) ? isNotNullOrEmpty(format) ? string.trim().equals(format) : Boolean.valueOf(string.trim()) : null;
             case STRING:
                 return isNotNullOrEmpty(string) ? string : null;
             case NUMERIC:
-                return isNotNullOrEmpty(string) ? new BigDecimal(string) : null;
+                return isNotNullOrEmpty(string) ? new BigDecimal(string.trim()) : null;
             case DATE:
-                return isNotNullOrEmpty(string) ? LocalDate.parse(string, DateTimeFormatter.ofPattern(format)) : null;
+                return isNotNullOrEmpty(string) ? LocalDate.parse(string.trim(), DateTimeFormatter.ofPattern(format)) : null;
             case TIME:
-                return isNotNullOrEmpty(string) ? LocalTime.parse(string, DateTimeFormatter.ofPattern(format)) : null;
+                return isNotNullOrEmpty(string) ? LocalTime.parse(string.trim(), DateTimeFormatter.ofPattern(format)) : null;
             case DATETIME:
-                return isNotNullOrEmpty(string) ? LocalDateTime.parse(string, DateTimeFormatter.ofPattern(format)) : null;
+                return isNotNullOrEmpty(string) ? LocalDateTime.parse(string.trim(), DateTimeFormatter.ofPattern(format)) : null;
             default:
                 return null;
         }
