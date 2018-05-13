@@ -17,7 +17,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-version '1.0.0.RC4'
+version '1.0.0.RC5'
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 task sourceJar(type: Jar) {
