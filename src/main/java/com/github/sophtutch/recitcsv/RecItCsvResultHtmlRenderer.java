@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -67,8 +68,23 @@ class RecItCsvResultHtmlRenderer {
             templateEngine.process("file", context, stringWriter);
 
             Path resultFile = writeResultFile(outputPath, stringWriter.toString());
-            resultFileNames.add(new RecItCsvTuple4<>(actualFileDir.toString(), filePath, resultFile.getFileName().toString(), fileResult.isMatched()));
+            resultFileNames.add(new RecItCsvTuple4<>(actualDir.relativize(actualFileDir).toString(), filePath, resultFile.getFileName().toString(), fileResult.isMatched()));
         }
+
+        resultFileNames.sort((t1, t2) -> {
+            int compare = Objects.compare(t1.getFirst(), t2.getFirst(), String.CASE_INSENSITIVE_ORDER);
+            if (compare == 0) {
+                compare = Objects.compare(t1.getSecond(), t2.getSecond(), String.CASE_INSENSITIVE_ORDER);
+                if (compare == 0) {
+                    compare = Objects.compare(t1.getThird(), t2.getThird(), String.CASE_INSENSITIVE_ORDER);
+                    if (compare == 0) {
+                        compare = Boolean.compare(t1.getFourth(), t2.getFourth());
+                    }
+                }
+            }
+            return compare;
+        });
+
         writeHomeFile(outputPath, templateEngine, createContext(expectedDir, actualDir, numericFieldDiffToleranceActual, numericFieldDiffTolerancePercent, resultFileNames, result.isMatched()));
 
         return resultFileNames.stream().map(t -> Paths.get(t.getFirst())).collect(Collectors.toList());
