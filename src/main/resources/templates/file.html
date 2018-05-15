@@ -67,7 +67,7 @@
     <div class="table-responsive">
     <table th:if="${rowResults}" class="table table-bordered table-sm table-hover">
         <h2 class="display-5">Unmatched Rows</h2>
-        <thead class="thead-dark">
+        <thead  th:class="${matched} ? 'p-3 mb-2 bg-success text-white' : 'p-3 mb-2 bg-danger text-white'">
         <tr>
             <th th:each="field : ${fields}" th:text="${field.name}"></th>
         </tr>
