@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
@@ -8,9 +8,11 @@
 
     <title th:text="${name}">File Reconciliation Result</title>
     <style>
-        .table, .table td{
-            border-color: black;
-            border-width: 2;
+        table.table-bordered > thead > tr > th {
+            border:1px solid black;
+        }
+        table.table-bordered > tbody > tr > td {
+            border:1px solid black;
         }
     </style>
 </head>
@@ -67,14 +69,14 @@
     <div class="table-responsive">
     <table th:if="${rowResults}" class="table table-bordered table-sm table-hover">
         <h2 class="display-5">Unmatched Rows</h2>
-        <thead  th:class="${matched} ? 'p-3 mb-2 bg-success text-white' : 'p-3 mb-2 bg-danger text-white'">
+        <thead>
         <tr>
-            <th th:each="field : ${fields}" th:text="${field.name}"></th>
+            <th th:class="${field.key} ? 'bg-primary'" th:each="field : ${fields}" th:text="${field.name}"></th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="row : ${rowResults}">
-            <td th:each="field : ${row.fieldResults}" th:text="${field.actual}"></td>
+            <td th:class="${!field.matched} ? 'bg-danger'" th:each="field : ${row.fieldResults}" th:text="${field.matched ? field.actual : field.actual + ' (' + field.expected + ')'}"></td>
         </tr>
         </tbody>
     </table>

@@ -74,6 +74,8 @@ class RecItCsvConfiguration {
         private String actualDir;
 
         private String separator;
+        private int headers;
+        private boolean checkHeaders;
         private Double numericFieldDiffToleranceActual;
         private Double numericFieldDiffTolerancePercent;
 
@@ -109,6 +111,22 @@ class RecItCsvConfiguration {
 
         void setSeparator(String separator) {
             this.separator = separator;
+        }
+
+        public int getHeaders() {
+            return headers;
+        }
+
+        public void setHeaders(int headers) {
+            this.headers = headers;
+        }
+
+        public boolean isCheckHeaders() {
+            return checkHeaders;
+        }
+
+        public void setCheckHeaders(boolean checkHeaders) {
+            this.checkHeaders = checkHeaders;
         }
 
         Optional<Double> getNumericFieldDiffToleranceActual() {

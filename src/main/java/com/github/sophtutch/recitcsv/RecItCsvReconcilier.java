@@ -110,10 +110,13 @@ public class RecItCsvReconcilier {
         String separator = fileConfiguration.getSeparator();
 
         AtomicInteger count = new AtomicInteger();
+        int headers = fileConfiguration.getHeaders();
+        boolean checkHeaders = fileConfiguration.isCheckHeaders();
         List<RecItCsvConfiguration.FileField> fields = fileConfiguration.getFields();
         return Files.lines(file)
+                .filter(line -> headers < count.incrementAndGet())
                 .map(line -> {
-                    int lineNunmber = count.incrementAndGet();
+                    int lineNunmber = count.get();
 
                     List<String> rowKey = new LinkedList<>();
                     List<RecItCsvTuple2<String, Object>> row = new LinkedList<>();

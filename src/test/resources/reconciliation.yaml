@@ -10,6 +10,8 @@ files:
     expectedDir: 'src/test/resources/expected'
     actualDir: 'src/test/resources/actual'
     separator: ','
+    headers: 2
+    checkHeaders: 'false'
     numericFieldDiffToleranceActual: 0.02
     fields:
       - name: 'ID'
